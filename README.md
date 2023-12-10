@@ -11,7 +11,7 @@ This script works only on `bash/zsh`, sorry Windows users...
 
 
 This repo include a bonus: 8 O'RLY cover templates!
-![image](./../../assets/bonus.png)
+![image](./assets/bonus.png)
 Have fun!
 
 
