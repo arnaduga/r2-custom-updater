@@ -9,8 +9,10 @@ The goal of this script is to simplify reapplying your custom template settings,
 This script works only on `bash/zsh`, sorry Windows users...
 
 
-BONUS
-Eight O'RLY cover as custom templates!
+
+This repo include a bonus: 8 O'RLY cover templates!
+![image](./../../assets/bonus.png)
+Have fun!
 
 
 ## Pre-requisite
