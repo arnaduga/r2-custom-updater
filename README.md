@@ -1,10 +1,10 @@
 # reMarkable 2 custom template updater
 
-With a reMarkable 2 tablet, you can have some custom template (unofficially). That is very great an useful!
+With a reMarkable 2 tablet, you can have some custom templates (unofficially). That is very great an useful!
 
 However, everytime you get an official update, your custom templates are lost.
 
-The goal of this script is to simplify reapplying your custom template settings, but uploading the images files and updating the `templates.json` file if the ssettings are gone (2 successive calls won't make duplications)
+The goal of this script is to simplify reapplying your custom template settings, by uploading the images files and updating the `templates.json` file if the settings are gone (2 successive calls won't make duplications).
 
 This script works only on `bash/zsh`, sorry Windows users...
 
@@ -15,30 +15,30 @@ Eight O'RLY cover as custom templates!
 
 ## Pre-requisite
 
-### (Recommanded) Assign a fixed IP to your reMarkable 2 tablet
+### (Recommended) Assign a fixed IP to your reMarkable 2 tablet
 
-This step is absolutely optional, however, it makes it easy for future usages. On you router settings, assign a fixed address to your reMarkable 2 tablet, for instance `192.168.0.50`.
+This step is absolutely optional, however, it makes it easy for future usages. 
+On you router settings, assign a fixed address to your reMarkable 2 tablet, for instance `192.168.0.50`.
 
-> **Warning**: some routers distribute addresses on a different range, like `192.168.1.x` (CIDR `192.168.1.0/255`). 
+> **Warning**: some routers distribute addresses on a different range, like `192.168.1.x`. 
 > 
 > Please adjust according to your home network.
 
 ### Get your reMarkable 2 IP address and ssh password
 
-There multiple website and blog post explaining how to retrieve the ip address and the password for SSH to the reMarkable table.
+There multiple websites and blog posts explaining how to retrieve the ip address and the password for SSH to the reMarkable tablet.
 
-You can see [here](https://philerb.com/2021/12/26/remarkable-tablet-ssh/) or [here](https://www.simplykyra.com/learn-how-to-access-your-remarkable-through-the-command-line/).
+You can look at [here](https://philerb.com/2021/12/26/remarkable-tablet-ssh/) or [here](https://www.simplykyra.com/learn-how-to-access-your-remarkable-through-the-command-line/).
 
 ### Set a SSH key
 
-The script (heavily) relays on `ssh` to access to your reMarkable tablet and adjust files. So, you must prepare it.
+The script (heavily) relays on `ssh` to access to your reMarkable tablet and adjust files.
 
 There are 2 information required by the script to run: 
     - Tablet IP address (fixed IP if you follow the first recommendation)
     - SSH identity key (private key)
 
 By default, there is no public/private key associated with your tablet, just a password.
-
 
 To generate a new keypair (it is recommanded to not use an existing one), in a shell window, type the following commands: 
 
@@ -89,21 +89,24 @@ To check if `jq` is installed on your system, type `jq --version`.
 
 To install `jq`, please refer to your system. It could be `sudo apt install jq` or `sudo dnf install jq` or `brew install jq`...
 
+In case you did not check the dependency before running the script, don't worry, you will be warned!
+
 ## Usage
 
 ### Prepare your templates
 
-First of all you have to prepare some templates files. These can be `png` (bitmap) or `svg` (vector) image file.
+First of all, you have to prepare some template files. These can be `png` (bitmap) or `svg` (vector) image file.
 
 For reference, and bootstrap, you can find in the `./originals` folder of this repo, the original files from a reMarkable 2 tablet. It can be very useful for the picture size.
 
-You can store your templates in any folder you want. This repo includes some templates to be used as notebook cover, and the picture files are located in the `./templates/` folder.
+You can store your templates in any folder you want. 
+
+This repo includes some templates to be used as notebook covers, and the picture files are located in the `./templates/` folder.
+
 
 ### Prepare the custom reference
 
-To let the script what are the template you want to add to your tablet, please create a `json` file. 
-
-As example (or if you want only the custom templates I prepared for you), you can have a look on the `custom.json` file.
+To let the script know what are the templates you want to add to your tablet, please create a dedicated `json` file, from `custom.json` model.
 
 The structure of the file is: 
 
@@ -124,9 +127,9 @@ The structure of the file is:
 ```
 
 where:
-    - `<template name>` is the tempalte name, as display in the list of templates
+    - `<template name>` is the tempalte name, as display in the templates list
     - `<template filename>` is the template filename, without extension
-    - `<icon code>` is the icon code. Unfortunately, we can note create new icon code. We have to use one of  the existing one
+    - `<icon code>` is the icon code. Unfortunately, we can note create new icon code. We have to use one of the existing one. Please look at `./originals/templates.json` file to find them
     - `<category>` is a category to classify the template. POssible values:   `Creative`, `Grids`, `Life/organize`, `Lines`
 
 
@@ -147,7 +150,8 @@ For instance, here is a `custom.json` file to manage 2 additionnal custom templa
             "filename": "ORLY-pokemon",
             "iconCode": "\ue9fe",
             "categories": [
-                "Creative", "Life/Organize"
+                "Creative", 
+                "Life/Organize"
             ]
         }
     ]
@@ -215,10 +219,12 @@ $ ./reMarkable-update.sh -r 192.168.0.50 -i ~/.ssh/remarkable2 -c custom.json -t
 
 ```
 
+_That's all folks!_
+
 
 ## Limitations
 
-Some limitd and updates are required. They are listed in the [repo issue tracker](https://github.com/arnaduga/r2-custom-updater/issues).
+Some limits and improvements are required. They are listed in the [repo issue tracker](https://github.com/arnaduga/r2-custom-updater/issues).
 
 
 ## Questions?
