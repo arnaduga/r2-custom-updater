@@ -1,0 +1,68 @@
+{
+    "templates": [
+        {
+            "name": "O'RLY - Squirrel",
+            "filename": "ORLY-squirel",
+            "iconCode": "\ue9fe",
+            "categories": [
+                "Creative"
+            ]
+        },
+        {
+            "name": "O'RLY - Pokemon",
+            "filename": "ORLY-pokemon",
+            "iconCode": "\ue9fe",
+            "categories": [
+                "Creative"
+            ]
+        },
+        {
+            "name": "O'RLY - Octopus",
+            "filename": "ORLY-octopus",
+            "iconCode": "\ue9fe",
+            "categories": [
+                "Creative"
+            ]
+        },
+        {
+            "name": "O'RLY - Llama",
+            "filename": "ORLY-llama",
+            "iconCode": "\ue9fe",
+            "categories": [
+                "Creative"
+            ]
+        },
+        {
+            "name": "O'RLY - Jabba",
+            "filename": "ORLY-jabba",
+            "iconCode": "\ue9fe",
+            "categories": [
+                "Creative"
+            ]
+        },
+        {
+            "name": "O'RLY - Hedgehog",
+            "filename": "ORLY-hedgehog",
+            "iconCode": "\ue9fe",
+            "categories": [
+                "Creative"
+            ]
+        },
+        {
+            "name": "O'RLY - Hamster",
+            "filename": "ORLY-hamster",
+            "iconCode": "\ue9fe",
+            "categories": [
+                "Creative"
+            ]
+        },
+        {
+            "name": "O'RLY - Hamster 2",
+            "filename": "ORLY-hamster-2",
+            "iconCode": "\ue9fe",
+            "categories": [
+                "Creative"
+            ]
+        }
+    ]
+}
