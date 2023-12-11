@@ -1,6 +1,7 @@
 # Small library for better log display
 SCRIPT_ROOT=$( (cd "$(dirname "$0")" && pwd))
 SCRIPT_NAME=$(basename $0)
+
 SCRIPT_VERSION="v1.1.0"
 source "$SCRIPT_ROOT/lib/logutils.sh"
 
