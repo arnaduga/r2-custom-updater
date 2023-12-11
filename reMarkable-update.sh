@@ -1,11 +1,12 @@
 # Small library for better log display
 SCRIPT_ROOT=$( (cd "$(dirname "$0")" && pwd))
 SCRIPT_NAME=$(basename $0)
-SCRIPT_VERSION="v1.0.1"
+SCRIPT_VERSION="v1.1.0"
 source "$SCRIPT_ROOT/lib/logutils.sh"
 
 TEMPLATEFILE="templates.json"
 REMOTEFOLDER="/usr/share/remarkable/templates"
+REMOTEHOMEFOLDER="/home/root/custom_templates"
 LOCALBACKUPFOLDER="backups"
 
 # trap ctrl-c and call ctrl_c()
@@ -105,6 +106,42 @@ checkPrereq() {
     done
 }
 
+processAllCustom() {
+    getFileFromRemote "${REMOTEFOLDER}/$TEMPLATEFILE" "$TEMPLATEFILE"
+
+    logdebug "FOUND $(jq '.templates | length' $CUSTOMFILE) custom templates in $CUSTOMFILE"
+
+    jq -r -c '.templates[]' ${CUSTOMFILE} | while read i; do
+        loginfo "Processing template name $(jq -r -c '.name' <<<$i)"
+        checkFilename "${i}"
+        processOneTemplate "${i}"
+    done
+
+    # Backing up remote file
+    TIMESTAMP=$(date '+%Y-%m-%d-%H%M%S')
+    if [ ! -d "./${LOCALBACKUPFOLDER}" ]; then
+        mkdir ./${LOCALBACKUPFOLDER}
+    fi
+    cp $TEMPLATEFILE "${LOCALBACKUPFOLDER}/$TEMPLATEFILE.${TIMESTAMP}"
+    stdlog "In case of error, backup file is: ${LOCALBACKUPFOLDER}/$TEMPLATEFILE.${TIMESTAMP}"
+
+    # Copying file to remote
+    loginfo "Copy files to remote"
+    if [ -z $DRYRUN ]; then
+        copyFileToRemote "${TEMPLATEFILE}" "${REMOTEFOLDER}/${TEMPLATEFILE}"
+    else
+        loginfo "DRYRUN copy ${TEMPLATEFILE} to ${REMOTEFOLDER}/${TEMPLATEFILE}"
+    fi
+
+    loginfo "Restarting main reMarkable application (xochitl)"
+    if [ -z $DRYRUN ]; then
+        ssh -n -i $IDENTITYFILE root@$REMOTESERVER 'systemctl restart xochitl 2> /dev/null'
+    else
+        loginfo "DRYRUN restart interface"
+    fi
+
+}
+
 processOneTemplate() {
     local SOURCE="${1}"
     local TEMP_NAME=$(jq -c -r '.name' <<<$SOURCE)
@@ -112,24 +149,25 @@ processOneTemplate() {
 
     # Copying files. If does already exist, it will be refreshed with the latest version
     local OPT1="${FILENAME}.png"
-    local OPT2="${FILENAME}.svg"
-
     if [ -f "${TEMPLATEFOLDER}/${OPT1}" ]; then
-        if [ "$DRYRUN" -eq 1 ]; then
-            loginfo "DRYRUN copy ${TEMPLATEFOLDER}/${OPT1} to ${REMOTEFOLDER}/${OPT1}"
+        if [ -z $DRYRUN ]; then
+            logdebug "copyFileToRemote ${TEMPLATEFOLDER}/${OPT1} --> ${REMOTEHOMEFOLDER}/${OPT1}"
+            copyFileToRemote "${TEMPLATEFOLDER}/${OPT1}" "${REMOTEHOMEFOLDER}/${OPT1}"
+            RES=$(ssh -n -i $IDENTITYFILE root@$REMOTESERVER "ln -fsv ${REMOTEHOMEFOLDER}/${OPT1} ${REMOTEFOLDER}/${OPT1}")
         else
-            copyFileToRemote "${TEMPLATEFOLDER}/${OPT1}" "${REMOTEFOLDER}/${OPT1}"
+            loginfo "DRYRUN copy ${TEMPLATEFOLDER}/${OPT1} to ${REMOTEHOMEFOLDER}/${OPT1}"
         fi
-        logdebug "copyFileToRemote ${TEMPLATEFOLDER}/${OPT1} --> ${REMOTEFOLDER}/${OPT1}"
     fi
 
+    local OPT2="${FILENAME}.svg"
     if [ -f "${TEMPLATEFOLDER}/${OPT2}" ]; then
-        if [ "$DRYRUN" -eq 1 ]; then
-            loginfo "DRYRUN copy ${TEMPLATEFOLDER}/${OPT2} to ${REMOTEFOLDER}/${OPT2}"
+        if [ -z $DRYRUN ]; then
+            logdebug "copyFileToRemote ${TEMPLATEFOLDER}/${OPT2} --> ${REMOTEHOMEFOLDER}/${OPT2}"
+            copyFileToRemote "${TEMPLATEFOLDER}/${OPT2}" "${REMOTEHOMEFOLDER}/${OPT2}"
+            RES=$(ssh -n -i $IDENTITYFILE root@$REMOTESERVER "ln -fsv ${REMOTEHOMEFOLDER}/${OPT2} ${REMOTEFOLDER}/${OPT2}")
         else
-            copyFileToRemote "${TEMPLATEFOLDER}/${OPT2}" "${REMOTEFOLDER}/${OPT2}"
+            loginfo "DRYRUN copy ${TEMPLATEFOLDER}/${OPT2} to ${REMOTEHOMEFOLDER}/${OPT2}"
         fi
-        logdebug "copyFileToRemote ${TEMPLATEFOLDER}/${OPT2} --> ${REMOTEFOLDER}/${OPT2}"
     fi
 
     # Looking for the template in original file
@@ -150,6 +188,22 @@ processOneTemplate() {
     RESULT=$(jq -a --argjson s "$SOURCE" '.templates += [$s]' $TEMPLATEFILE)
     echo "${RESULT}" >$TEMPLATEFILE
 
+}
+
+checkFilename() {
+    local OBJECT="${1}"
+    FILENAME=$(jq -r -c '.filename' <<<$OBJECT)
+
+    local OPT1=${TEMPLATEFOLDER}/${FILENAME}".png"
+    local OPT2=${TEMPLATEFOLDER}/${FILENAME}".svg"
+
+    logdebug "Checking file existence: ${FILENAME}.(png|svg)"
+    if [ -f $OPT1 ] || [ -f $OPT2 ]; then
+        logdebug "Files found. Can continue."
+    else
+        logfatal "Template files not found. Missing '$OPT1' or '$OPT2' or both"
+        exit 409
+    fi
 }
 
 getFileFromRemote() {
@@ -184,62 +238,6 @@ copyFileToRemote() {
         logfatal "Error during copying file from $SOURCE to $DEST. Please check log file: $TEMPFILE "
         exit 503
     fi
-}
-
-checkFilename() {
-    local OBJECT="${1}"
-    FILENAME=$(jq -r -c '.filename' <<<$OBJECT)
-
-    local OPT1=${TEMPLATEFOLDER}/${FILENAME}".png"
-    local OPT2=${TEMPLATEFOLDER}/${FILENAME}".svg"
-
-    logdebug "Checking file existence: ${FILENAME}.(png|svg)"
-    if [ -f $OPT1 ] || [ -f $OPT2 ]; then
-        logdebug "Files found. Can continue."
-    else
-        logfatal "Template files not found. Missing '$OPT1' or '$OPT2' or both"
-        exit 409
-    fi
-}
-
-processAllCustom() {
-
-    # To parametrize (command argument)
-    local CUSTFILE="custom.json"
-
-    getFileFromRemote "${REMOTEFOLDER}/$TEMPLATEFILE" "$TEMPLATEFILE"
-
-    jq -c '.templates[]' $CUSTFILE | while read i; do
-        loginfo "Processing template name $(jq -r -c '.name' <<<$i)"
-        # Check if file exist
-        checkFilename "${i}"
-        # Manage ONE template
-        processOneTemplate "${i}"
-    done
-
-    # Backing up remote file
-    TIMESTAMP=$(date '+%Y-%m-%d-%H%M%S')
-    if [ ! -d "./${LOCALBACKUPFOLDER}" ]; then
-        mkdir ./${LOCALBACKUPFOLDER}
-    fi
-    cp $TEMPLATEFILE "${LOCALBACKUPFOLDER}/$TEMPLATEFILE.${TIMESTAMP}"
-    stdlog "In case of error, backup file is: ${LOCALBACKUPFOLDER}/$TEMPLATEFILE.${TIMESTAMP}"
-
-    # Copying file to remote
-    loginfo "Copy files to remote"
-    if [ "$DRYRUN" -eq 1 ]; then
-        loginfo "DRYRUN copy ${TEMPLATEFILE} to ${REMOTEFOLDER}/${TEMPLATEFILE}"
-    else
-        copyFileToRemote "${TEMPLATEFILE}" "${REMOTEFOLDER}/${TEMPLATEFILE}"
-    fi
-
-    loginfo "Restarting main reMarkable application (xochitl)"
-    if [ "$DRYRUN" -eq 1 ]; then
-        loginfo "DRYRUN restart interface"
-    else
-        ssh -i $IDENTITYFILE root@$REMOTESERVER 'systemctl restart xochitl 2> /dev/null'
-    fi
-
 }
 
 while getopts "r:i:c:t:dhn" option; do
