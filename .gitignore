@@ -1,4 +1,6 @@
 backups*
+
+templates.json
 mycustom.json
 
 templates/meeting-notes-*

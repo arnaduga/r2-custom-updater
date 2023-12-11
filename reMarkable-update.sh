@@ -1,7 +1,7 @@
 # Small library for better log display
 SCRIPT_ROOT=$( (cd "$(dirname "$0")" && pwd))
 SCRIPT_NAME=$(basename $0)
-SCRIPT_VERSION="v1.0"
+SCRIPT_VERSION="v1.0.1"
 source "$SCRIPT_ROOT/lib/logutils.sh"
 
 TEMPLATEFILE="templates.json"
@@ -115,23 +115,33 @@ processOneTemplate() {
     local OPT2="${FILENAME}.svg"
 
     if [ -f "${TEMPLATEFOLDER}/${OPT1}" ]; then
-        copyFileToRemote "${TEMPLATEFOLDER}/${OPT1}" "${REMOTEFOLDER}/${OPT1}"
+        if [ "$DRYRUN" -eq 1 ]; then
+            loginfo "DRYRUN copy ${TEMPLATEFOLDER}/${OPT1} to ${REMOTEFOLDER}/${OPT1}"
+        else
+            copyFileToRemote "${TEMPLATEFOLDER}/${OPT1}" "${REMOTEFOLDER}/${OPT1}"
+        fi
         logdebug "copyFileToRemote ${TEMPLATEFOLDER}/${OPT1} --> ${REMOTEFOLDER}/${OPT1}"
     fi
+
     if [ -f "${TEMPLATEFOLDER}/${OPT2}" ]; then
-        copyFileToRemote "${TEMPLATEFOLDER}/${OPT2}" "${REMOTEFOLDER}/${OPT2}"
+        if [ "$DRYRUN" -eq 1 ]; then
+            loginfo "DRYRUN copy ${TEMPLATEFOLDER}/${OPT2} to ${REMOTEFOLDER}/${OPT2}"
+        else
+            copyFileToRemote "${TEMPLATEFOLDER}/${OPT2}" "${REMOTEFOLDER}/${OPT2}"
+        fi
         logdebug "copyFileToRemote ${TEMPLATEFOLDER}/${OPT2} --> ${REMOTEFOLDER}/${OPT2}"
     fi
 
     # Looking for the template in original file
-    GOTIT=$(jq --arg n "'${TEMP_NAME}'" '[.templates.[] | select( .name == $n )] | length' $TEMPLATEFILE)
-    if [[ $GOTIT != 1 ]] && [[ $GOTIT != "0" ]]; then
+    GOTIT=$(jq --arg n "${TEMP_NAME}" '[.templates.[] | select( .name == $n )] | length' $TEMPLATEFILE)
+
+    if [[ $GOTIT != "1" ]] && [[ $GOTIT != "0" ]]; then
         logfatal "There is an issue with the search response... Check logs"
         logerror $GOTIT
         exit 501
     fi
 
-    if [[ $GOTIT == 1 ]]; then
+    if [[ $GOTIT -eq "1" ]]; then
         logdebug "The template '${TEMP_NAME}' is already there. Skipping."
         return
     fi
@@ -217,19 +227,31 @@ processAllCustom() {
 
     # Copying file to remote
     loginfo "Copy files to remote"
-    copyFileToRemote "${TEMPLATEFILE}" "${REMOTEFOLDER}/${TEMPLATEFILE}"
+    if [ "$DRYRUN" -eq 1 ]; then
+        loginfo "DRYRUN copy ${TEMPLATEFILE} to ${REMOTEFOLDER}/${TEMPLATEFILE}"
+    else
+        copyFileToRemote "${TEMPLATEFILE}" "${REMOTEFOLDER}/${TEMPLATEFILE}"
+    fi
 
     loginfo "Restarting main reMarkable application (xochitl)"
-    ssh -i $IDENTITYFILE root@$REMOTESERVER 'systemctl restart xochitl 2> /dev/null'
+    if [ "$DRYRUN" -eq 1 ]; then
+        loginfo "DRYRUN restart interface"
+    else
+        ssh -i $IDENTITYFILE root@$REMOTESERVER 'systemctl restart xochitl 2> /dev/null'
+    fi
 
 }
 
-while getopts "r:i:c:t:dh" option; do
+while getopts "r:i:c:t:dhn" option; do
     case "${option}" in
     d)
         # DEBUG mode activated
         debug="T"
         logdebug "DEBUG mode activated. "
+        ;;
+    n)
+        DRYRUN=1
+        loginfo "Dry run mode activated. No files will be PUSHED"
         ;;
     h)
         usage
