@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Small library for better log display
 SCRIPT_ROOT=$( (cd "$(dirname "$0")" && pwd))
 SCRIPT_NAME=$(basename $0)

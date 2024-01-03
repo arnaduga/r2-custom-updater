@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # shellcheck disable=SC2154
 # Copyright 2021 Google LLC
 #
@@ -44,10 +44,10 @@ logfatal() {
 
 log() {
     TIMESTAMP=$(date '+%Y-%m-%d-%H:%M:%S')
-    echo "${3}[$1][$TIMESTAMP] $2${NOCOL}" 1>&2
+    printf "${3}[$1][$TIMESTAMP] $2${NOCOL}\n" 1>&2
 }
 
 stdlog() {
     TIMESTAMP=$(date '+%Y-%m-%d-%H:%M:%S')
-    echo "[LOG  ][$TIMESTAMP] $1"
+    printf "[LOG  ][$TIMESTAMP] $1\n"
 }
