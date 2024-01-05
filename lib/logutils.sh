@@ -16,6 +16,7 @@
 RED='\033[0;31m'
 ORANGE='\033[0;33m'
 BLUE='\033[0;36m'
+GREEN='\033[0;32m'
 NOCOL='\033[0m'
 
 NOOUTPUT=''
@@ -49,5 +50,5 @@ log() {
 
 stdlog() {
     TIMESTAMP=$(date '+%Y-%m-%d-%H:%M:%S')
-    printf "[LOG  ][$TIMESTAMP] $1\n"
+    printf "${GREEN}[LOG  ][$TIMESTAMP] $1${NOCOL}\n"
 }

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Not released]
 
+### CHanged
+
+- Change storage target to `/home/root/.local/share/remarkable/templates/custom/`, as suggested by @anbzerc
+
 ### Fix
 
 - Fix #5 and the color issue on certain shell, by switching from `echo` to `printf`
