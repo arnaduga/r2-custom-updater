@@ -9,7 +9,7 @@ source "$SCRIPT_ROOT/lib/logutils.sh"
 
 TEMPLATEFILE="templates.json"
 REMOTEFOLDER="/usr/share/remarkable/templates"
-REMOTEHOMEFOLDER="/home/root/custom_templates"
+REMOTEHOMEFOLDER="/home/root/.local/share/remarkable/templates/custom/"
 LOCALBACKUPFOLDER="backups"
 
 # trap ctrl-c and call ctrl_c()
